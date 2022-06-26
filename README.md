@@ -8,7 +8,7 @@ To use `rust-codegen`, add the following to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-rust-codegen
+rust-codegen = "0.1.1"
 ```
 
 ## Usage
@@ -36,7 +36,9 @@ scope.new_struct("Foo")
 println!("{}", scope.to_string());
 ```
 
-Make sure to check out the documentation for all of the available features with examples.
+**Note:** You should not rely on the formatted output as it's very basic. You should instead run the generated code through `rustfmt`.
+
+Make sure to check out the [documentation](https://github.com/robertcorponoi/rust-codegen) for all of the available features with examples.
 
 ## Acknowledgements
 
@@ -45,15 +47,3 @@ This was originally a fork of [carllerche's codegen repo](https://github.com/car
 ## License
 
 [MIT](./LICENSE)
-
-## Usage
-
-1) Create a `Scope` instance.
-2) Use the builder API to add elements to the scope.
-3) Call `Scope::to_string()` to get the generated code.
-
-For example:
-
-
-
-**Note:** You should not rely on the formatted output as it's very basic. You should instead run the generated code through `rustfmt`.

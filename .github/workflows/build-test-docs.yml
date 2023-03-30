@@ -1,4 +1,4 @@
-on: [push, pull_request, workflow_dispatch]
+on: [pull_request]
 
 name: build-test-docs
 
@@ -16,7 +16,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-  
+
   test:
     name: test
     needs: build
@@ -31,7 +31,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-  
+
   doc:
     name: doc
     needs: test

@@ -1,6 +1,6 @@
 [package]
 name = "rust-codegen"
-version = "0.1.1"
+version = "0.1.2"
 license = "MIT"
 authors = ["Robert Corponoi <robertcorponoi@gmail.com"]
 description = "A simple builder API for generating Rust code"
@@ -10,4 +10,4 @@ repository  = "https://github.com/robertcorponoi/rust-codegen"
 edition = "2018"
 
 [dependencies]
-indexmap = "1.9.1"
+indexmap = "1.9.3"

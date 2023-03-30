@@ -10,4 +10,4 @@ repository  = "https://github.com/robertcorponoi/rust-codegen"
 edition = "2018"
 
 [dependencies]
-indexmap = "1.9.1"
+indexmap = "1.9.3"

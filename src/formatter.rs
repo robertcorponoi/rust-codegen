@@ -19,16 +19,16 @@ pub struct Formatter<'a> {
 
 impl<'a> Formatter<'a> {
     /// Return a new formatter that writes to the given string.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `dst` - The destination of the formatted string.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Formatter;
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
     /// ```
@@ -41,17 +41,14 @@ impl<'a> Formatter<'a> {
     }
 
     /// Wrap the given function inside a block.
-    pub fn block<F>(&mut self, f: F) -> fmt::Result
-    where
-        F: FnOnce(&mut Self) -> fmt::Result,
-    {
+    pub fn block(&mut self, f: impl FnOnce(&mut Self) -> fmt::Result) -> fmt::Result {
         if !self.is_start_of_line() {
             write!(self, " ")?;
         }
 
-        write!(self, "{{\n")?;
+        writeln!(self, "{{")?;
         self.indent(f)?;
-        write!(self, "}}\n")?;
+        writeln!(self, "}}")?;
         Ok(())
     }
 
@@ -74,7 +71,7 @@ impl<'a> Formatter<'a> {
     /// Pushes the number of spaces defined for a new line.
     fn push_spaces(&mut self) {
         for _ in 0..self.spaces {
-            self.dst.push_str(" ");
+            self.dst.push(' ');
         }
     }
 }
@@ -86,7 +83,7 @@ impl<'a> fmt::Write for Formatter<'a> {
 
         for line in s.lines() {
             if !first {
-                self.dst.push_str("\n");
+                self.dst.push('\n');
             }
 
             first = false;
@@ -104,7 +101,7 @@ impl<'a> fmt::Write for Formatter<'a> {
         }
 
         if s.as_bytes().last() == Some(&b'\n') {
-            self.dst.push_str("\n");
+            self.dst.push('\n');
         }
 
         Ok(())
@@ -132,17 +129,17 @@ pub fn fmt_generics(generics: &[String], fmt: &mut Formatter<'_>) -> fmt::Result
 /// Format generic bounds.
 pub fn fmt_bounds(bounds: &[Bound], fmt: &mut Formatter<'_>) -> fmt::Result {
     if !bounds.is_empty() {
-        write!(fmt, "\n")?;
+        writeln!(fmt)?;
 
         // Write first bound
         write!(fmt, "where {}: ", bounds[0].name)?;
         fmt_bound_rhs(&bounds[0].bound, fmt)?;
-        write!(fmt, ",\n")?;
+        writeln!(fmt, ",")?;
 
         for bound in &bounds[1..] {
             write!(fmt, "      {}: ", bound.name)?;
             fmt_bound_rhs(&bound.bound, fmt)?;
-            write!(fmt, ",\n")?;
+            writeln!(fmt, ",")?;
         }
     }
 

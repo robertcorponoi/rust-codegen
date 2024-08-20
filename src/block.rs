@@ -16,16 +16,16 @@ pub struct Block {
 
 impl Block {
     /// Returns an empty code block.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `before` - The contents to add before the block. This can be an empty "" if you don't want anything before the block.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Block;
-    /// 
+    ///
     /// let mut block = Block::new("");
     /// ```
     pub fn new(before: &str) -> Self {
@@ -37,44 +37,41 @@ impl Block {
     }
 
     /// Push a line to the code block.
-    /// 
-    /// # Arguments 
-    /// 
+    ///
+    /// # Arguments
+    ///
     /// * `line` - The line to add to the code block.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Block;
-    /// 
+    ///
     /// let mut block = Block::new("");
     /// block.line("println!(\"Hello, world!\");");
     /// ```
-    pub fn line<T>(&mut self, line: T) -> &mut Self
-    where
-        T: ToString,
-    {
+    pub fn line(&mut self, line: impl ToString) -> &mut Self {
         self.body.push(Body::String(line.to_string()));
         self
     }
 
     /// Push a nested block to this block.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `block` - The block to push to this block.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Block;
-    /// 
+    ///
     /// let mut block_1 = Block::new("");
     /// block_1.line("println!(\"Hello, world!\");");
-    /// 
+    ///
     /// let mut block_2 = Block::new("");
     /// block_2.line("println!(\"from Rust!!\");");
-    /// 
+    ///
     /// block_1.push_block(block_2);
     /// ```
     pub fn push_block(&mut self, block: Block) -> &mut Self {
@@ -83,16 +80,16 @@ impl Block {
     }
 
     /// Add a snippet after the block.
-    /// 
-    /// # Arguments 
-    /// 
+    ///
+    /// # Arguments
+    ///
     /// * `after` - The snippet to add after the code block.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Block;
-    /// 
+    ///
     /// let mut block = Block::new("This is before");
     /// block.after("This is after");
     /// ```
@@ -102,19 +99,19 @@ impl Block {
     }
 
     /// Formats the block using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::{Block, Formatter};
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let mut block = Block::new("This is before");
     /// block.fmt(&mut fmt);
     /// ```
@@ -129,7 +126,7 @@ impl Block {
             write!(fmt, " ")?;
         }
 
-        write!(fmt, "{{\n")?;
+        writeln!(fmt, "{{")?;
 
         fmt.indent(|fmt| {
             for b in &self.body {
@@ -145,7 +142,7 @@ impl Block {
             write!(fmt, "{}", after)?;
         }
 
-        write!(fmt, "\n")?;
+        writeln!(fmt)?;
         Ok(())
     }
 }

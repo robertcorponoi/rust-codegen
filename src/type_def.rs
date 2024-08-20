@@ -29,9 +29,9 @@ pub struct TypeDef {
 
 impl TypeDef {
     /// Return a type definition with the provided name.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the type definition.
     pub fn new(name: &str) -> Self {
         TypeDef {
@@ -47,24 +47,21 @@ impl TypeDef {
     }
 
     /// Sets the visibility of the type definition.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `vis` - The visiblity of the type definition.
     pub fn vis(&mut self, vis: &str) {
         self.vis = Some(vis.to_string());
     }
 
     /// Add a `where` bound to the type definition.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the bound.
     /// * `ty` - The type of the bound.
-    pub fn bound<T>(&mut self, name: &str, ty: T)
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) {
         self.bounds.push(Bound {
             name: name.to_string(),
             bound: vec![ty.into()],
@@ -72,56 +69,56 @@ impl TypeDef {
     }
 
     /// Add a macro to the type definition (e.g. `"#[async_trait]"`)
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `macro` - The macro to add.
     pub fn r#macro(&mut self, r#macro: &str) {
         self.macros.push(r#macro.to_string());
     }
 
     /// Adds documentation to the type definition.
-    /// 
+    ///
     /// * `docs` - The docs to add.
-    /// 
+    ///
     /// # Examples
     pub fn doc(&mut self, docs: &str) {
         self.docs = Some(Docs::new(docs));
     }
 
     /// Add a new type that the type definition. should derive.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the derive.
-    /// 
+    ///
     /// # Examples
     pub fn derive(&mut self, name: &str) {
         self.derive.push(name.to_string());
     }
 
     /// Specify lint attribute to supress a warning or error.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `allow` - The lint attribute to apply.
     pub fn allow(&mut self, allow: &str) {
         self.allow.push(allow.to_string());
     }
 
     /// Specify representation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `repr` - The representation to specify.
     pub fn repr(&mut self, repr: &str) {
         self.repr = Some(repr.to_string());
     }
 
     /// Formats the type definition using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
     pub fn fmt_head(
         &self,
@@ -163,35 +160,35 @@ impl TypeDef {
     }
 
     /// Formats the allow using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
     fn fmt_allow(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         for allow in &self.allow {
-            write!(fmt, "#[allow({})]\n", allow)?;
+            writeln!(fmt, "#[allow({})]", allow)?;
         }
 
         Ok(())
     }
 
     /// Formats the representation using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
     fn fmt_repr(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         if let Some(ref repr) = self.repr {
-            write!(fmt, "#[repr({})]\n", repr)?;
+            writeln!(fmt, "#[repr({})]", repr)?;
         }
 
         Ok(())
     }
 
     /// Formats the derive using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
     fn fmt_derive(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         if !self.derive.is_empty() {
@@ -204,20 +201,20 @@ impl TypeDef {
                 write!(fmt, "{}", name)?;
             }
 
-            write!(fmt, ")]\n")?;
+            writeln!(fmt, ")]")?;
         }
 
         Ok(())
     }
 
     /// Formats the macros using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
     fn fmt_macros(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         for m in self.macros.iter() {
-            write!(fmt, "{}\n", m)?;
+            writeln!(fmt, "{}", m)?;
         }
         Ok(())
     }

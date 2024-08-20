@@ -20,7 +20,7 @@ impl Body {
     /// * `fmt` - The formatter to use.
     pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         match &self {
-            Body::String(s) => write!(fmt, "{}\n", s),
+            Body::String(s) => writeln!(fmt, "{}", s),
             Body::Block(b) => b.fmt(fmt),
         }
     }

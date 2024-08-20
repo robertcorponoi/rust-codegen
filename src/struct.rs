@@ -106,10 +106,7 @@ impl Struct {
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.bound("A", "TraitA");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.type_def.bound(name, ty);
         self
     }
@@ -230,10 +227,7 @@ impl Struct {
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.field("bar", "i32");
     /// ```
-    pub fn field<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn field(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.fields.named(name, ty);
         self
     }
@@ -257,10 +251,7 @@ impl Struct {
     /// 
     /// foo_struct.tuple_field(bar_type);
     /// ```
-    pub fn tuple_field<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn tuple_field(&mut self, ty: impl Into<Type>) -> &mut Self {
         self.fields.tuple(ty);
         self
     }
@@ -302,7 +293,7 @@ impl Struct {
     /// foo_struct.fmt(&mut fmt);
     pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         for m in self.attributes.iter() {
-            write!(fmt, "{}\n", m)?;
+            writeln!(fmt, "{}", m)?;
         }
         
         self.type_def.fmt_head("struct", &[], fmt)?;
@@ -310,10 +301,10 @@ impl Struct {
 
         match self.fields {
             Fields::Empty => {
-                write!(fmt, ";\n")?;
+                writeln!(fmt, ";")?;
             }
             Fields::Tuple(..) => {
-                write!(fmt, ";\n")?;
+                writeln!(fmt, ";")?;
             }
             _ => {}
         }

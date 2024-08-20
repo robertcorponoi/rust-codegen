@@ -101,10 +101,7 @@ impl Enum {
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.bound("T", "Default");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.type_def.bound(name, ty);
         self
     }

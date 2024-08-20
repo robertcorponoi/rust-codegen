@@ -29,7 +29,7 @@ impl Docs {
     /// * `fmt` - The formatter to use.
     pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         for line in self.docs.lines() {
-            write!(fmt, "/// {}\n", line)?;
+            writeln!(fmt, "/// {}", line)?;
         }
 
         Ok(())

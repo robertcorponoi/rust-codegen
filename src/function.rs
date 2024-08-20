@@ -43,16 +43,16 @@ pub struct Function {
 
 impl Function {
     /// Return a new function definition.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let foo_fn = Function::new("foo_fn");
     /// ```
     pub fn new(name: &str) -> Self {
@@ -74,16 +74,16 @@ impl Function {
     }
 
     /// Set the function documentation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `docs` - The docs to set for the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.doc("Sample Foo function documentation.");
     /// ```
@@ -93,16 +93,16 @@ impl Function {
     }
 
     /// Specify lint attribute to supress a warning or error.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `allow` - The lint attribute to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.allow("dead_code");
     /// ```
@@ -112,16 +112,16 @@ impl Function {
     }
 
     /// Set the function visibility.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `vis` - The visiblity to set for the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.vis("pub");
     /// ```
@@ -131,16 +131,16 @@ impl Function {
     }
 
     /// Set whether this function is async or not.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `async` - Indicates whether this function is async or not.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.set_async(true);
     /// ```
@@ -150,16 +150,16 @@ impl Function {
     }
 
     /// Add a generic to the function.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the generic to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.generic("T");
     /// ```
@@ -169,12 +169,12 @@ impl Function {
     }
 
     /// Add `self` as a function argument.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.arg_self();
     /// ```
@@ -184,12 +184,12 @@ impl Function {
     }
 
     /// Add `&self` as a function argument.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.arg_ref_self();
     /// ```
@@ -199,12 +199,12 @@ impl Function {
     }
 
     /// Add `&mut self` as a function argument.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.arg_mut_self();
     /// ```
@@ -214,24 +214,21 @@ impl Function {
     }
 
     /// Add a function argument.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the argument.
     /// * `ty` - The type of the argument.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.arg("name", "&str");
     /// ```
-    pub fn arg<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn arg(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.args.push(Field {
             name: name.to_string(),
             ty: ty.into(),
@@ -246,46 +243,40 @@ impl Function {
     }
 
     /// Set the function return type.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `ty` - The return type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.ret("String");
     /// ```
-    pub fn ret<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn ret(&mut self, ty: impl Into<Type>) -> &mut Self {
         self.ret = Some(ty.into());
         self
     }
 
     /// Add a `where` bound to the function.
-    /// 
-    /// # Arguments 
-    /// 
+    ///
+    /// # Arguments
+    ///
     /// * `name ` - The name of the bound.
     /// * `ty` - The type of the bound.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.bound("A", "TraitA");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.bounds.push(Bound {
             name: name.to_string(),
             bound: vec![ty.into()],
@@ -294,23 +285,20 @@ impl Function {
     }
 
     /// Push a line to the function implementation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `line` - The line to add to the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Function;
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.line("println!(\"Hello, world!\")");
     /// ```
-    pub fn line<T>(&mut self, line: T) -> &mut Self
-    where
-        T: ToString,
-    {
+    pub fn line(&mut self, line: impl ToString) -> &mut Self {
         self.body
             .get_or_insert(vec![])
             .push(Body::String(line.to_string()));
@@ -319,11 +307,11 @@ impl Function {
     }
 
     /// Add an attribute to the function.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `attribute` - The attribute to add.
-    /// 
+    ///
     /// # Examples
     ///
     /// ```
@@ -338,13 +326,13 @@ impl Function {
     }
 
     /// Specify an `extern` ABI for the function.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `abi` - The extern ABI to add.
-    /// 
-    /// # Examples 
-    /// 
+    ///
+    /// # Examples
+    ///
     /// ```
     /// use rust_codegen::Function;
     ///
@@ -357,21 +345,21 @@ impl Function {
     }
 
     /// Push a block to the function implementation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `block` - The block to push to the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::*;
     ///
     /// let mut foo_fn = Function::new("foo_fn");
-    /// 
+    ///
     /// let mut block = Block::new("");
     /// block.line("println!(\"Hello, world!\");");
-    /// 
+    ///
     /// foo_fn.push_block(block);
     /// ```
     pub fn push_block(&mut self, block: Block) -> &mut Self {
@@ -381,20 +369,20 @@ impl Function {
     }
 
     /// Formats the function using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `is_trait` - Indicates whether it is a trait or not.
     /// * `fmt` - The formatter to use.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::*;
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let mut foo_fn = Function::new("foo_fn");
     /// foo_fn.fmt(false, &mut fmt);
     /// ```
@@ -404,11 +392,11 @@ impl Function {
         }
 
         if let Some(ref allow) = self.allow {
-            write!(fmt, "#[allow({})]\n", allow)?;
+            writeln!(fmt, "#[allow({})]", allow)?;
         }
 
         for attr in self.attributes.iter() {
-            write!(fmt, "#[{}]\n", attr)?;
+            writeln!(fmt, "#[{}]", attr)?;
         }
 
         if is_trait {
@@ -470,7 +458,7 @@ impl Function {
                     panic!("impl blocks must define fn bodies");
                 }
 
-                write!(fmt, ";\n")
+                writeln!(fmt, ";")
             }
         }
     }

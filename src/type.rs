@@ -13,16 +13,16 @@ pub struct Type {
 
 impl Type {
     /// Return a new type with the given name.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Type;
-    /// 
+    ///
     /// let foo_type = Type::new("Foo");
     /// ```
     pub fn new(name: &str) -> Self {
@@ -33,23 +33,20 @@ impl Type {
     }
 
     /// Add a generic to the type.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `ty` - The generic to add to the type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Type;
-    /// 
+    ///
     /// let mut foo_type = Type::new("Foo");
     /// foo_type.generic("T");
     /// ```
-    pub fn generic<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn generic(&mut self, ty: impl Into<Type>) -> &mut Self {
         // Make sure that the name doesn't already include generics
         assert!(
             !self.name.contains("<"),
@@ -61,15 +58,15 @@ impl Type {
     }
 
     /// Formats the struct using the given formatter.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::{Formatter,Type};
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let mut foo_type = Type::new("Foo");
     /// foo_type.fmt(&mut fmt);
     pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
@@ -78,9 +75,9 @@ impl Type {
     }
 
     /// Formats the type using the given formatter with the given generics.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `generics` - The generics to use.
     /// * `fmt` - The formatter to use.
     fn fmt_slice(generics: &[Type], fmt: &mut Formatter<'_>) -> fmt::Result {

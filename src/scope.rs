@@ -28,6 +28,12 @@ pub struct Scope {
     items: Vec<Item>,
 }
 
+impl Default for Scope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Scope {
     /// Returns a new scope.
     pub fn new() -> Self {
@@ -48,7 +54,7 @@ impl Scope {
         let ty = ty.split("::").next().unwrap_or(ty);
         self.imports
             .entry(path.to_string())
-            .or_insert(IndexMap::new())
+            .or_default()
             .entry(ty.to_string())
             .or_insert_with(|| Import::new(path, ty))
     }
@@ -96,7 +102,7 @@ impl Scope {
         self.items
             .iter()
             .filter_map(|item| match item {
-                &Item::Module(ref module) if module.name == *name => Some(module),
+                Item::Module(module) if module.name == *name => Some(module),
                 _ => None,
             })
             .next()
@@ -219,6 +225,7 @@ impl Scope {
     }
 
     /// Return a string representation of the scope.
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         let mut ret = String::new();
 
@@ -237,12 +244,12 @@ impl Scope {
         self.fmt_imports(fmt)?;
 
         if !self.imports.is_empty() {
-            write!(fmt, "\n")?;
+            writeln!(fmt)?;
         }
 
         for (i, item) in self.items.iter().enumerate() {
             if i != 0 {
-                write!(fmt, "\n")?;
+                writeln!(fmt)?;
             }
 
             match *item {
@@ -253,7 +260,7 @@ impl Scope {
                 Item::Enum(ref v) => v.fmt(fmt)?,
                 Item::Impl(ref v) => v.fmt(fmt)?,
                 Item::Raw(ref v) => {
-                    write!(fmt, "{}\n", v)?;
+                    writeln!(fmt, "{}", v)?;
                 }
             }
         }
@@ -293,7 +300,9 @@ impl Scope {
 
                     write!(fmt, "use {}::", path)?;
 
-                    if tys.len() > 1 {
+                    if tys.len() == 1 {
+                        writeln!(fmt, "{};", tys[0])?;
+                    } else {
                         write!(fmt, "{{")?;
 
                         for (i, ty) in tys.iter().enumerate() {
@@ -303,9 +312,7 @@ impl Scope {
                             write!(fmt, "{}", ty)?;
                         }
 
-                        write!(fmt, "}};\n")?;
-                    } else if tys.len() == 1 {
-                        write!(fmt, "{};\n", tys[0])?;
+                        writeln!(fmt, "}};")?;
                     }
                 }
             }

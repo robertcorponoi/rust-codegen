@@ -7,6 +7,7 @@ use crate::function::Function;
 use crate::type_def::TypeDef;
 
 use crate::r#type::Type;
+use crate::FormatCode;
 
 /// Defines a trait.
 #[allow(dead_code)]
@@ -26,16 +27,16 @@ pub struct Trait {
 
 impl Trait {
     /// Return a trait definition with the provided name.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the trait.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let foo_trait = Trait::new("Foo");
     /// ```
     pub fn new(name: &str) -> Self {
@@ -49,12 +50,12 @@ impl Trait {
     }
 
     /// Returns a reference to the type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let foo_trait = Trait::new("Foo");
     /// println!("{:?}", foo_trait.ty());
     /// ```
@@ -63,16 +64,16 @@ impl Trait {
     }
 
     /// Set the trait visibility.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `vis` - The visibility to set for the trait.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.vis("pub");
     /// ```
@@ -82,12 +83,12 @@ impl Trait {
     }
 
     /// Add a generic to the trait.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.generic("T");
     /// ```
@@ -97,39 +98,36 @@ impl Trait {
     }
 
     /// Add a `where` bound to the trait.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the bound.
     /// * `ty` - The type of the bound.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.bound("A", "String");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.type_def.bound(name, ty);
         self
     }
 
     /// Add a macro to the trait def (e.g. `"#[async_trait]"`).
-    /// 
-    /// # Arguments 
-    /// 
+    ///
+    /// # Arguments
+    ///
     /// * `r#macro` - The macro to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.r#macro("async_trait");
     /// ```
@@ -139,38 +137,35 @@ impl Trait {
     }
 
     /// Add a parent trait.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `ty` - The type of the parent trait.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.parent("Bar");
     /// ```
-    pub fn parent<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn parent(&mut self, ty: impl Into<Type>) -> &mut Self {
         self.parents.push(ty.into());
         self
     }
 
     /// Set the trait documentation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `docs` - The documentation for the trait.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.doc("Sample trait documentation.");
     /// ```
@@ -181,16 +176,16 @@ impl Trait {
 
     /// Add an associated type. Returns a mutable reference to the new
     /// associated type for futher configuration.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the associated type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.associated_type("A");
     /// ```
@@ -204,66 +199,69 @@ impl Trait {
     }
 
     /// Push a new function definition, returning a mutable reference to it.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the function.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Trait;
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// foo_trait.new_fn("bar_fn");
     /// ```
     pub fn new_fn(&mut self, name: &str) -> &mut Function {
         let mut func = Function::new(name);
         func.body = None;
+        func.set_trait();
 
         self.push_fn(func);
         self.fns.last_mut().unwrap()
     }
 
     /// Push a function definition.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `item` - The function to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::{Function,Trait};
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
     /// let mut bar_fn = Function::new("bar_fn");
-    /// 
+    ///
     /// foo_trait.push_fn(bar_fn);
     /// ```
-    pub fn push_fn(&mut self, item: Function) -> &mut Self {
+    pub fn push_fn(&mut self, mut item: Function) -> &mut Self {
+        item.set_trait();
         self.fns.push(item);
         self
     }
-
+}
+impl FormatCode for Trait {
     /// Formats the scope using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
-    /// use rust_codegen::{Formatter,Trait};
-    /// 
+    /// use rust_codegen::*;
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let mut foo_trait = Trait::new("Foo");
-    /// foo_trait.fmt(&mut fmt);
+    /// foo_trait.fmt_code(&mut fmt);
     /// ```
-    pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         self.type_def.fmt_head("trait", &self.parents, fmt)?;
 
         fmt.block(|fmt| {
@@ -281,16 +279,16 @@ impl Trait {
                         fmt_bound_rhs(&ty.bound, fmt)?;
                     }
 
-                    write!(fmt, ";\n")?;
+                    writeln!(fmt, ";")?;
                 }
             }
 
             for (i, func) in self.fns.iter().enumerate() {
                 if i != 0 || !assoc.is_empty() {
-                    write!(fmt, "\n")?;
+                    writeln!(fmt)?;
                 }
 
-                func.fmt(true, fmt)?;
+                func.fmt_code(fmt)?;
             }
 
             Ok(())

@@ -5,6 +5,7 @@ use crate::type_def::TypeDef;
 use crate::variant::Variant;
 
 use crate::r#type::Type;
+use crate::FormatCode;
 
 /// Defines an enumeration.
 #[derive(Debug, Clone)]
@@ -15,16 +16,16 @@ pub struct Enum {
 
 impl Enum {
     /// Returns a enum definition with the provided name.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the enum.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let foo_enum = Enum::new("Foo");
     /// ```
     pub fn new(name: &str) -> Self {
@@ -35,12 +36,12 @@ impl Enum {
     }
 
     /// Returns a reference to the enum's type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let foo_enum = Enum::new("Foo");
     /// println!("{:?}", foo_enum.ty());
     /// ```
@@ -49,16 +50,16 @@ impl Enum {
     }
 
     /// Set the enum's visibility.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `vis` - The visibility of the enum.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.vis("pub");
     /// ```
@@ -68,16 +69,16 @@ impl Enum {
     }
 
     /// Add a generic to the enum.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the generic.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.generic("T");
     /// ```
@@ -87,39 +88,36 @@ impl Enum {
     }
 
     /// Add a `where` bound to the enum.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the bound.
     /// * `ty` - The type of the bound.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.bound("T", "Default");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.type_def.bound(name, ty);
         self
     }
 
     /// Set the enum's documentation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `docs` - The docs to set for the enum.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.doc("Sample Foo enum documentation");
     /// ```
@@ -129,16 +127,16 @@ impl Enum {
     }
 
     /// Add a new type that the enum should derive.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the derive.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.derive("Debug");
     /// ```
@@ -148,16 +146,16 @@ impl Enum {
     }
 
     /// Specify lint attribute to supress a warning or error.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `allow` - The lint attribute to apply.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.allow("dead_code");
     /// ```
@@ -167,16 +165,16 @@ impl Enum {
     }
 
     /// Specify representation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `repr` - The representation to specify.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.repr("C");
     /// ```
@@ -186,16 +184,16 @@ impl Enum {
     }
 
     /// Push a variant to the enum, returning a mutable reference to it.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the variant.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Enum;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
     /// foo_enum.new_variant("FirstVariant");
     /// ```
@@ -205,18 +203,18 @@ impl Enum {
     }
 
     /// Push a variant to the enum.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `item` - The variant to push to the enum.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::*;
-    /// 
+    ///
     /// let mut foo_enum = Enum::new("Foo");
-    /// 
+    ///
     /// let foo_enum_first_variant = Variant::new("FirstVariant");
     /// foo_enum.push_variant(foo_enum_first_variant);
     /// ```
@@ -224,30 +222,32 @@ impl Enum {
         self.variants.push(item);
         self
     }
+}
 
+impl FormatCode for Enum {
     /// Formats the enum using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::*;
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let foo_enum = Enum::new("Foo");
-    /// foo_enum.fmt(&mut fmt);
+    /// foo_enum.fmt_code(&mut fmt);
     /// ```
-    pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         self.type_def.fmt_head("enum", &[], fmt)?;
 
         fmt.block(|fmt| {
             for variant in &self.variants {
-                variant.fmt(fmt)?;
+                variant.fmt_code(fmt)?;
             }
 
             Ok(())

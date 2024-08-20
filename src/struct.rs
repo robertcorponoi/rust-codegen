@@ -6,6 +6,7 @@ use crate::formatter::Formatter;
 use crate::type_def::TypeDef;
 
 use crate::r#type::Type;
+use crate::FormatCode;
 
 /// Defines a struct.
 #[derive(Debug, Clone)]
@@ -19,16 +20,16 @@ pub struct Struct {
 
 impl Struct {
     /// Return a structure definition with the provided name.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the struct.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let foo_struct = Struct::new("Foo");
     /// ```
     pub fn new(name: &str) -> Self {
@@ -40,12 +41,12 @@ impl Struct {
     }
 
     /// Returns a reference to the type.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let foo_struct = Struct::new("Foo");
     /// println!("{:?}", foo_struct.ty());
     /// ```
@@ -54,16 +55,16 @@ impl Struct {
     }
 
     /// Set the structure visibility.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `vis` - The visibility of the struct.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.vis("pub");
     /// ```
@@ -73,16 +74,16 @@ impl Struct {
     }
 
     /// Add a generic to the struct.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the generic.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.generic("T");
     /// ```
@@ -92,39 +93,36 @@ impl Struct {
     }
 
     /// Add a `where` bound to the struct.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the bound.
     /// * `ty` - The type of the bound.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.bound("A", "TraitA");
     /// ```
-    pub fn bound<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn bound(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.type_def.bound(name, ty);
         self
     }
 
     /// Set the structure documentation.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `docs` - The documentation to set for the struct.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.doc("Sample struct documentation.");
     /// ```
@@ -134,16 +132,16 @@ impl Struct {
     }
 
     /// Add a new type that the struct should derive.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the type to derive.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.derive("Debug");
     /// ```
@@ -153,16 +151,16 @@ impl Struct {
     }
 
     /// Specify lint attribute to supress a warning or error.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `allow` - The lint attribute to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.allow("dead_code");
     /// ```
@@ -172,14 +170,14 @@ impl Struct {
     }
 
     /// Specify representation.
-    /// 
+    ///
     /// * `repr` - The representation to specify.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.repr("C");
     /// ```
@@ -192,19 +190,19 @@ impl Struct {
     ///
     /// A struct can either set named fields with this function or tuple fields
     /// with `push_tuple_field`, but not both.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `field` - The named field to push.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::{Field,Struct};
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// let mut bar_field = Field::new("bar", "i32");
-    /// 
+    ///
     /// foo_struct.push_field(bar_field);
     /// ```
     pub fn push_field(&mut self, field: Field) -> &mut Self {
@@ -216,24 +214,21 @@ impl Struct {
     ///
     /// A struct can either set named fields with this function or tuple fields
     /// with `tuple_field`, but not both.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the field.
     /// * `ty` - The type of the field.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.field("bar", "i32");
     /// ```
-    pub fn field<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn field(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.fields.named(name, ty);
         self
     }
@@ -242,40 +237,37 @@ impl Struct {
     ///
     /// A struct can either set tuple fields with this function or named fields
     /// with `field`, but not both.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `ty` - The type of the tuple field to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::{Struct,Type};
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// let mut bar_type = Type::new("bar");
-    /// 
+    ///
     /// foo_struct.tuple_field(bar_type);
     /// ```
-    pub fn tuple_field<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn tuple_field(&mut self, ty: impl Into<Type>) -> &mut Self {
         self.fields.tuple(ty);
         self
     }
 
     /// Adds an attribute to the struct (e.g. `"#[some_attribute]"`)
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `attribute` - The attribute to add.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Struct;
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
     /// foo_struct.attr("some_attribute");
     /// ```
@@ -283,37 +275,38 @@ impl Struct {
         self.attributes.push(attribute.to_string());
         self
     }
-
+}
+impl FormatCode for Struct {
     /// Formats the struct using the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::*;
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
-    /// 
+    ///
     /// let mut foo_struct = Struct::new("Foo");
-    /// foo_struct.fmt(&mut fmt);
-    pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    /// foo_struct.fmt_code(&mut fmt);
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         for m in self.attributes.iter() {
-            write!(fmt, "{}\n", m)?;
+            writeln!(fmt, "{}", m)?;
         }
-        
+
         self.type_def.fmt_head("struct", &[], fmt)?;
-        self.fields.fmt(fmt)?;
+        self.fields.fmt_code(fmt)?;
 
         match self.fields {
             Fields::Empty => {
-                write!(fmt, ";\n")?;
+                writeln!(fmt, ";")?;
             }
             Fields::Tuple(..) => {
-                write!(fmt, ";\n")?;
+                writeln!(fmt, ";")?;
             }
             _ => {}
         }

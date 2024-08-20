@@ -2,6 +2,7 @@ use std::fmt::{self, Write};
 
 use crate::block::Block;
 use crate::formatter::Formatter;
+use crate::FormatCode;
 
 /// Defines the types of content that go in functions and blocks.
 #[derive(Debug, Clone)]
@@ -12,16 +13,16 @@ pub enum Body {
     Block(Block),
 }
 
-impl Body {
+impl FormatCode for Body {
     /// Formats the string or block with the given formatter.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         match &self {
-            Body::String(s) => write!(fmt, "{}\n", s),
-            Body::Block(b) => b.fmt(fmt),
+            Body::String(s) => writeln!(fmt, "{}", s),
+            Body::Block(b) => b.fmt_code(fmt),
         }
     }
 }

@@ -4,6 +4,7 @@ use crate::field::Field;
 use crate::formatter::Formatter;
 
 use crate::r#type::Type;
+use crate::FormatCode;
 
 /// Defines a set of fields.
 #[derive(Debug, Clone)]
@@ -17,9 +18,9 @@ pub enum Fields {
 
 impl Fields {
     /// Pushed a named field passed in as a `Field` type.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `field` - The field to push.
     pub fn push_named(&mut self, field: Field) -> &mut Self {
         match *self {
@@ -36,15 +37,12 @@ impl Fields {
     }
 
     /// Pushes a named field by its name and type.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `name` - The name of the field.
     /// * `ty` - The type of the field.
-    pub fn named<T>(&mut self, name: &str, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn named(&mut self, name: &str, ty: impl Into<Type>) -> &mut Self {
         self.push_named(Field {
             name: name.to_string(),
             ty: ty.into(),
@@ -54,14 +52,11 @@ impl Fields {
     }
 
     /// Pushes a type.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `ty` - The type to push.
-    pub fn tuple<T>(&mut self, ty: T) -> &mut Self
-    where
-        T: Into<Type>,
-    {
+    pub fn tuple(&mut self, ty: impl Into<Type>) -> &mut Self {
         match *self {
             Fields::Empty => {
                 *self = Fields::Tuple(vec![ty.into()]);
@@ -74,11 +69,12 @@ impl Fields {
 
         self
     }
-
+}
+impl FormatCode for Fields {
     /// Formats the fields using the provided formatter.
-    /// 
+    ///
     /// * `fmt` - The formatter to use.
-    pub fn fmt(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result {
         match *self {
             Fields::Named(ref fields) => {
                 assert!(!fields.is_empty());
@@ -87,17 +83,17 @@ impl Fields {
                     for f in fields {
                         if !f.documentation.is_empty() {
                             for doc in &f.documentation {
-                                write!(fmt, "/// {}\n", doc)?;
+                                writeln!(fmt, "/// {}", doc)?;
                             }
                         }
                         if !f.annotation.is_empty() {
                             for ann in &f.annotation {
-                                write!(fmt, "{}\n", ann)?;
+                                writeln!(fmt, "{}", ann)?;
                             }
                         }
                         write!(fmt, "{}: ", f.name)?;
-                        f.ty.fmt(fmt)?;
-                        write!(fmt, ",\n")?;
+                        f.ty.fmt_code(fmt)?;
+                        writeln!(fmt, ",")?;
                     }
 
                     Ok(())
@@ -112,7 +108,7 @@ impl Fields {
                     if i != 0 {
                         write!(fmt, ", ")?;
                     }
-                    ty.fmt(fmt)?;
+                    ty.fmt_code(fmt)?;
                 }
 
                 write!(fmt, ")")?;

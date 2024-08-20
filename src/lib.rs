@@ -7,12 +7,12 @@
 //!
 //! 1. Create a `Scope` instance.
 //! 2. Use the builder API to add elements to the scope.
-//! 3. Call `Scope::to_string()` to get the generated code.
+//! 3. Call `to_string()` method of the `FormatCode` Trait to get the generated code.
 //!
 //! For example:
 //!
 //! ```rust
-//! use rust_codegen::Scope;
+//! use rust_codegen::{Scope, FormatCode};
 //!
 //! let mut scope = Scope::new();
 //!
@@ -46,7 +46,6 @@ mod r#struct;
 mod r#trait;
 mod r#type;
 
-
 pub use associated_type::*;
 pub use block::*;
 pub use field::*;
@@ -62,3 +61,31 @@ pub use r#impl::*;
 pub use r#struct::*;
 pub use r#trait::*;
 pub use r#type::*;
+
+macro_rules! impl_display {
+    ($struct:ty) => {
+        impl std::fmt::Display for $struct {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                let mut my_fmt = crate::formatter::Formatter::new(f);
+                crate::formatter::FormatCode::fmt_code(self, &mut my_fmt)?;
+                Ok(())
+            }
+        }
+    };
+}
+
+impl_display!(Block);
+impl_display!(Enum);
+impl_display!(Function);
+impl_display!(Impl);
+impl_display!(Module);
+impl_display!(Scope);
+impl_display!(Struct);
+impl_display!(Trait);
+impl_display!(Type);
+impl_display!(Variant);
+
+impl_display!(docs::Docs);
+impl_display!(body::Body);
+impl_display!(fields::Fields);
+impl_display!(item::Item);

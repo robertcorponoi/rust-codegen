@@ -1,4 +1,4 @@
-use std::fmt::{self, Write};
+use std::fmt::{self, Debug, Write};
 
 use crate::bound::Bound;
 use crate::r#type::Type;
@@ -7,51 +7,78 @@ use crate::r#type::Type;
 const DEFAULT_INDENT: usize = 4;
 
 /// Configures how a scope is formatted.
-#[derive(Debug)]
+///
 pub struct Formatter<'a> {
     /// Write destination.
-    dst: &'a mut String,
+    dst: &'a mut (dyn Write + 'a),
     /// Number of spaces to start a new line with.
     spaces: usize,
     /// Number of spaces per indentiation.
     indent: usize,
+    /// Last written char
+    last_char: Option<u8>,
+    /// Should write a newline
+    newline: bool,
+}
+
+impl<'a> Debug for Formatter<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Formatter")
+            .field("spaces", &self.spaces)
+            .field("indent", &self.indent)
+            .field("last_char", &self.last_char)
+            .finish()
+    }
+}
+
+/// Trait for formatting into string
+///
+/// provides a .to_string() method
+pub trait FormatCode {
+    /// Write this items information to the formatter.
+    fn fmt_code(&self, fmt: &mut Formatter<'_>) -> fmt::Result;
 }
 
 impl<'a> Formatter<'a> {
     /// Return a new formatter that writes to the given string.
-    /// 
+    ///
     /// # Arguments
-    /// 
+    ///
     /// * `dst` - The destination of the formatted string.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```
     /// use rust_codegen::Formatter;
-    /// 
+    ///
     /// let mut dest = String::new();
     /// let mut fmt = Formatter::new(&mut dest);
     /// ```
-    pub fn new(dst: &'a mut String) -> Self {
+    pub fn new(dst: &'a mut (dyn Write + 'a)) -> Self {
         Formatter {
             dst,
             spaces: 0,
             indent: DEFAULT_INDENT,
+            last_char: None,
+            newline: false,
         }
     }
 
+    /// Push a &str to this formatters underlying Write object
+    pub fn push_str(&mut self, s: &str) -> fmt::Result {
+        self.last_char = s.as_bytes().last().copied();
+        self.dst.write_str(s)
+    }
+
     /// Wrap the given function inside a block.
-    pub fn block<F>(&mut self, f: F) -> fmt::Result
-    where
-        F: FnOnce(&mut Self) -> fmt::Result,
-    {
+    pub fn block(&mut self, f: impl FnOnce(&mut Self) -> fmt::Result) -> fmt::Result {
         if !self.is_start_of_line() {
             write!(self, " ")?;
         }
 
-        write!(self, "{{\n")?;
+        writeln!(self, "{{")?;
         self.indent(f)?;
-        write!(self, "}}\n")?;
+        writeln!(self, "}}")?;
         Ok(())
     }
 
@@ -68,43 +95,39 @@ impl<'a> Formatter<'a> {
 
     /// Check if current destination is the start of a new line.
     pub fn is_start_of_line(&self) -> bool {
-        self.dst.is_empty() || self.dst.as_bytes().last() == Some(&b'\n')
+        self.last_char.is_none() || self.last_char == Some(b'\n')
     }
 
     /// Pushes the number of spaces defined for a new line.
-    fn push_spaces(&mut self) {
+    fn push_spaces(&mut self) -> fmt::Result {
         for _ in 0..self.spaces {
-            self.dst.push_str(" ");
+            self.push_str(" ")?;
         }
+        Ok(())
     }
 }
 
 impl<'a> fmt::Write for Formatter<'a> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        let mut first = true;
-        let mut should_indent = self.is_start_of_line();
-
-        for line in s.lines() {
-            if !first {
-                self.dst.push_str("\n");
+        for (i, line) in s.lines().enumerate() {
+            if i != 0 || self.newline {
+                self.newline = false;
+                self.push_str("\n")?;
             }
 
-            first = false;
-
-            let do_indent = should_indent && !line.is_empty() && line.as_bytes()[0] != b'\n';
-
-            if do_indent {
-                self.push_spaces();
+            if line.is_empty() {
+                continue;
             }
 
-            // If this loops again, then we just wrote a new line
-            should_indent = true;
+            if self.is_start_of_line() {
+                self.push_spaces()?;
+            }
 
-            self.dst.push_str(line);
+            self.push_str(line)?;
         }
-
-        if s.as_bytes().last() == Some(&b'\n') {
-            self.dst.push_str("\n");
+        self.last_char = s.as_bytes().last().copied();
+        if self.last_char == Some(b'\n') {
+            self.newline = true;
         }
 
         Ok(())
@@ -132,17 +155,17 @@ pub fn fmt_generics(generics: &[String], fmt: &mut Formatter<'_>) -> fmt::Result
 /// Format generic bounds.
 pub fn fmt_bounds(bounds: &[Bound], fmt: &mut Formatter<'_>) -> fmt::Result {
     if !bounds.is_empty() {
-        write!(fmt, "\n")?;
+        writeln!(fmt)?;
 
         // Write first bound
         write!(fmt, "where {}: ", bounds[0].name)?;
         fmt_bound_rhs(&bounds[0].bound, fmt)?;
-        write!(fmt, ",\n")?;
+        writeln!(fmt, ",")?;
 
         for bound in &bounds[1..] {
             write!(fmt, "      {}: ", bound.name)?;
             fmt_bound_rhs(&bound.bound, fmt)?;
-            write!(fmt, ",\n")?;
+            writeln!(fmt, ",")?;
         }
     }
 
@@ -155,7 +178,7 @@ pub fn fmt_bound_rhs(tys: &[Type], fmt: &mut Formatter<'_>) -> fmt::Result {
         if i != 0 {
             write!(fmt, " + ")?
         }
-        ty.fmt(fmt)?;
+        FormatCode::fmt_code(ty, fmt)?;
     }
 
     Ok(())
